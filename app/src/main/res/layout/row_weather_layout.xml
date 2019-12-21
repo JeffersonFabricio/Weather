@@ -13,6 +13,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
+        android:contentDescription="@string/picture_of_sky"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -33,8 +34,8 @@
         android:id="@+id/txtViewUnit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/unit"
         android:textSize="18sp"
-        android:text="º"
         app:layout_constraintStart_toEndOf="@+id/txtViewTemp"
         app:layout_constraintTop_toTopOf="@+id/txtViewTemp" />
 
@@ -43,10 +44,31 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/txtViewUnit"
         app:layout_constraintTop_toTopOf="@+id/txtViewUnit"
-        tools:text="Buenos Aires" />
+        tools:text="Buenos Aires, BR" />
+
+    <TextView
+        android:id="@+id/txtViewDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toEndOf="@+id/txtViewTemp"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewNameCity"
+        tools:text="Light rain" />
+
+    <TextView
+        android:id="@+id/txtViewWind"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/txtViewTemp"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewDescription"
+        tools:text="wind 1,5 m/s | clouds 75% | 1016 hpa" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

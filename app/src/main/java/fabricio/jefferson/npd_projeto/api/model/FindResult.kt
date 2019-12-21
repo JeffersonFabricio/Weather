@@ -11,15 +11,32 @@ data class City(
     val id: Int,
     val name: String,
     val main: Main,
-    val weather : List<Weather>
+    val weather : List<Weather>,
+    val sys : Sys,
+    val wind : Wind,
+    val clouds : Clouds
 )
 
 data class Main(
-    val temp: Float
+    val temp: Float,
+    val pressure : Int
+)
+
+data class Sys(
+    val country: String
 )
 
 data class Weather(
-    val icon : String
+    val icon : String,
+    val description : String
+)
+
+data class Wind(
+    val speed : Float
+)
+
+data class Clouds(
+    val all : Int
 )
 
 @Entity(tableName = "TB_FAVORITE")

@@ -11,4 +11,8 @@
     <string name="msgSaved">Saved with success!</string>
     <string name="msgNetworkOff">Networf off</string>
     <string name="msgNetworkOn">Network ON</string>
+    <string name="unit">º</string>
+    <string name="picture_of_sky">Picture of sky</string>
+    <string name="virgula">,</string>
+    <string name="br">BR</string>
 </resources>

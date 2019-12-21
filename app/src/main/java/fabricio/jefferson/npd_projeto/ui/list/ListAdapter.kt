@@ -1,6 +1,5 @@
 package fabricio.jefferson.npd_projeto.ui.list
 
-import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,13 +37,16 @@ class ListAdapter : RecyclerView.Adapter<ListAdapter.ViewHolder>() {
 
     class ViewHolder(view : View) : RecyclerView.ViewHolder(view){
         fun bind(city : City) {
-            itemView.txtViewNameCity.text = "${city.name}"
+            itemView.txtViewNameCity.text = "${city.name}, ${city.sys.country}"
             itemView.txtViewTemp.text = city.main.temp.toInt().toString()
+            itemView.txtViewWind.text = "Wind ${city.wind.speed} m/s | clouds ${city.clouds.all} | " +
+                    "${city.main.pressure} hpa"
             if (city.weather.isNotEmpty()){
                 Glide.with(itemView.context)
                     .load("http://openweathermap.org/img/w/${city.weather[0].icon}.png")
                     //.placeholder(R.drawable.ic_launcher_background)
                     .into(itemView.imgViewWeatherIcon)
+                itemView.txtViewDescription.text = city.weather[0].description
             }
         }
     }
