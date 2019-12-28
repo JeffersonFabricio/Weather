@@ -2,8 +2,8 @@ package fabricio.jefferson.npd_projeto.ui.list
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -13,10 +13,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import fabricio.jefferson.npd_projeto.R
-import fabricio.jefferson.npd_projeto.api.model.Favorite
 import fabricio.jefferson.npd_projeto.api.model.FindResult
 import fabricio.jefferson.npd_projeto.api.model.RetrofitManager
-import fabricio.jefferson.npd_projeto.common.Constrants
+import fabricio.jefferson.npd_projeto.common.Constants
 import fabricio.jefferson.npd_projeto.data.RoomManager
 import fabricio.jefferson.npd_projeto.ui.setting.SettingActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -26,6 +25,10 @@ import retrofit2.Response
 
 
 class ListActivity : AppCompatActivity(), Callback<FindResult> {
+
+    private val sp : SharedPreferences by lazy {
+        getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE)
+    }
 
     private val db : RoomManager? by lazy {
         RoomManager.getInstance(this)
@@ -55,8 +58,13 @@ class ListActivity : AppCompatActivity(), Callback<FindResult> {
 
     private fun getCities() {
         progressBar.visibility = View.VISIBLE
+        val isCelsius = sp.getBoolean(Constants.PREFS_TEMP, true)
+        val unit = if(isCelsius) Constants.PREFS_CELSIUS else Constants.PREFS_FAHRENHEIT
+        val isEnglish = sp.getBoolean(Constants.PREFS_LANG, true)
+        val lang = if(isEnglish) Constants.PREFS_ENGLISH else Constants.PREFS_PORTUGUESE
+
         val call = RetrofitManager.getWeatherService()
-            .find(edtTxtCity.text.toString(), Constrants.API_KEY)
+            .find(edtTxtCity.text.toString(), lang, unit, Constants.API_KEY)
         call.enqueue(this)
     }
 

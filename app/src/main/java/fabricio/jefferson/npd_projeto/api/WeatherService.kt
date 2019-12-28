@@ -7,10 +7,14 @@ import retrofit2.http.Query
 
 interface WeatherService {
 
-    @GET("find?units=metric")
+    @GET("find")
     fun find(
         @Query("q")
         cityName: String,
+        @Query("lang")
+        lang: String,
+        @Query("units")
+        unit: String,
         @Query("appId")
         appId: String
     ): Call<FindResult>
