@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnFavorite"
         app:layout_constraintStart_toEndOf="@+id/txtViewUnit"
         app:layout_constraintTop_toTopOf="@+id/txtViewUnit"
         tools:text="Buenos Aires, BR" />
@@ -66,9 +66,18 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/txtViewTemp"
         app:layout_constraintTop_toBottomOf="@+id/txtViewDescription"
         tools:text="wind 1,5 m/s | clouds 75% | 1016 hpa" />
+
+    <ImageButton
+        android:id="@+id/btnFavorite"
+        android:layout_width="39dp"
+        android:layout_height="43dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/btn_star"
+        android:contentDescription="@string/image_favorite_city" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,4 +19,16 @@ interface WeatherService {
         appId: String
     ): Call<FindResult>
 
+    @GET("group")
+    fun findFavorites(
+        @Query("id")
+        ids: String,
+        @Query("lang")
+        lang: String,
+        @Query("units")
+        unit: String,
+        @Query("appId")
+        appId: String
+    ): Call<FindResult>
+
 }

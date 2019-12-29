@@ -4,8 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
+import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Log
+import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -13,8 +14,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import fabricio.jefferson.npd_projeto.R
+import fabricio.jefferson.npd_projeto.api.model.City
+import fabricio.jefferson.npd_projeto.api.model.Favorite
 import fabricio.jefferson.npd_projeto.api.model.FindResult
 import fabricio.jefferson.npd_projeto.api.model.RetrofitManager
+import fabricio.jefferson.npd_projeto.async.FavoritesAsyncTask
+import fabricio.jefferson.npd_projeto.async.TaskListener
 import fabricio.jefferson.npd_projeto.common.Constants
 import fabricio.jefferson.npd_projeto.data.RoomManager
 import fabricio.jefferson.npd_projeto.ui.setting.SettingActivity
@@ -26,15 +31,17 @@ import retrofit2.Response
 
 class ListActivity : AppCompatActivity(), Callback<FindResult> {
 
-    private val sp : SharedPreferences by lazy {
+    private lateinit var asyncTask: FavoritesAsyncTask
+
+    private val sp: SharedPreferences by lazy {
         getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE)
     }
 
-    private val db : RoomManager? by lazy {
+    private val db: RoomManager? by lazy {
         RoomManager.getInstance(this)
     }
 
-    private val adapter : ListAdapter by lazy {
+    private val adapter: ListAdapter by lazy {
         ListAdapter()
     }
 
@@ -43,6 +50,11 @@ class ListActivity : AppCompatActivity(), Callback<FindResult> {
         setContentView(R.layout.activity_main)
 
         initRecyclerView()
+        btnSearch()
+        getFavoritesCities()
+    }
+
+    private fun btnSearch() {
         btnSearch.setOnClickListener {
             if (isDeviceConnected())
                 getCities()
@@ -51,7 +63,7 @@ class ListActivity : AppCompatActivity(), Callback<FindResult> {
         }
     }
 
-    private fun initRecyclerView(){
+    private fun initRecyclerView() {
         rvWeather.adapter = adapter
         rvWeather.layoutManager = LinearLayoutManager(this)
     }
@@ -59,13 +71,51 @@ class ListActivity : AppCompatActivity(), Callback<FindResult> {
     private fun getCities() {
         progressBar.visibility = View.VISIBLE
         val isCelsius = sp.getBoolean(Constants.PREFS_TEMP, true)
-        val unit = if(isCelsius) Constants.PREFS_CELSIUS else Constants.PREFS_FAHRENHEIT
+        val unit = if (isCelsius) Constants.PREFS_CELSIUS else Constants.PREFS_FAHRENHEIT
         val isEnglish = sp.getBoolean(Constants.PREFS_LANG, true)
-        val lang = if(isEnglish) Constants.PREFS_ENGLISH else Constants.PREFS_PORTUGUESE
+        val lang = if (isEnglish) Constants.PREFS_ENGLISH else Constants.PREFS_PORTUGUESE
 
         val call = RetrofitManager.getWeatherService()
             .find(edtTxtCity.text.toString(), lang, unit, Constants.API_KEY)
         call.enqueue(this)
+    }
+
+    private fun getCitiesFavorites(favorites: List<Int>?) {
+        if (favorites != null && favorites.isNotEmpty()) {
+            progressBar.visibility = View.VISIBLE
+            val isCelsius = sp.getBoolean(Constants.PREFS_TEMP, true)
+            val unit = if (isCelsius) Constants.PREFS_CELSIUS else Constants.PREFS_FAHRENHEIT
+            val isEnglish = sp.getBoolean(Constants.PREFS_LANG, true)
+            val lang = if (isEnglish) Constants.PREFS_ENGLISH else Constants.PREFS_PORTUGUESE
+            val ids = TextUtils.join(",", favorites)
+            val call = RetrofitManager.getWeatherService()
+                .findFavorites(ids, lang, unit, Constants.API_KEY)
+            call.enqueue(this)
+        } else {
+            adapter.updateData(null)
+        }
+    }
+
+    private fun getFavoritesCities() {
+        asyncTask = FavoritesAsyncTask(this, object : TaskListener {
+            override fun onTaskComplete(favorites: List<Int>?) {
+                getCitiesFavorites(favorites)
+            }
+        })
+        asyncTask.execute()
+    }
+
+    fun favorite(city: City) {
+        FavoriteAsync(this, city).execute()
+    }
+
+    private fun getFavorites() {
+        asyncTask = FavoritesAsyncTask(this, object : TaskListener {
+            override fun onTaskComplete(favorites: List<Int>?) {
+                favorites?.let { adapter.updateFavorites(it) }
+            }
+        })
+        asyncTask.execute()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -75,7 +125,7 @@ class ListActivity : AppCompatActivity(), Callback<FindResult> {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val menuId = R.id.setting_item
-        if (menuId == R.id.setting_item){
+        if (menuId == R.id.setting_item) {
             val intent = Intent(this, SettingActivity::class.java)
             startActivity(intent)
             return true
@@ -91,15 +141,39 @@ class ListActivity : AppCompatActivity(), Callback<FindResult> {
     }
 
     override fun onFailure(call: Call<FindResult>, t: Throwable) {
-        Log.e("Jeff","Error", t)
         progressBar.visibility = View.GONE
     }
 
     override fun onResponse(call: Call<FindResult>, response: Response<FindResult>) {
-        if (response.isSuccessful){
+        if (response.isSuccessful) {
             adapter.updateData(response.body()?.list)
         }
         progressBar.visibility = View.GONE
+    }
+
+    class FavoriteAsync(val context: Context, val city: City) : AsyncTask<Void, Void, Boolean>() {
+
+        val db = RoomManager.getInstance(context)
+
+        override fun doInBackground(vararg p0: Void?): Boolean {
+            var favorite: Favorite? = db?.getCityDao()?.favoriteById(city.id)
+            if (favorite == null) {
+                favorite = Favorite(city.id, city.name)
+                db?.getCityDao()?.insertFavorite(favorite)
+                return true
+            } else {
+                db?.getCityDao()?.deleteFavorite(favorite)
+                return false
+            }
+        }
+
+        override fun onPostExecute(isSave: Boolean) {
+            super.onPostExecute(isSave)
+            val activity = context as ListActivity
+            activity.getFavorites()
+            if (activity.edtTxtCity.text.trim().isEmpty())
+                activity.getFavoritesCities()
+        }
     }
 
 }

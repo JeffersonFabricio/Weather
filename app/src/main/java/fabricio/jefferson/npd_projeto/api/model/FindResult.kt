@@ -1,6 +1,7 @@
 package fabricio.jefferson.npd_projeto.api.model
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 data class FindResult(
@@ -14,7 +15,9 @@ data class City(
     val weather : List<Weather>,
     val sys : Sys,
     val wind : Wind,
-    val clouds : Clouds
+    val clouds : Clouds,
+    @Ignore
+    var isFavorite: Boolean = false
 )
 
 data class Main(

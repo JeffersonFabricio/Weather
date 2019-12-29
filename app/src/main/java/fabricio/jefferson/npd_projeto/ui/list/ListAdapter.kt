@@ -17,7 +17,8 @@ class ListAdapter : RecyclerView.Adapter<ListAdapter.ViewHolder>() {
         val view = LayoutInflater.from(parent.context).inflate(
             R.layout.row_weather_layout,
             parent,
-            false)
+            false
+        )
 
         return ViewHolder(view)
     }
@@ -25,29 +26,55 @@ class ListAdapter : RecyclerView.Adapter<ListAdapter.ViewHolder>() {
     override fun getItemCount() = list?.size ?: 0
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        list?.let{
+        list?.let {
             holder.bind(it[position])
         }
     }
 
-    fun updateData(list: List<City>?){
+    fun updateData(list: List<City>?) {
         this.list = list
         notifyDataSetChanged()
     }
 
-    class ViewHolder(view : View) : RecyclerView.ViewHolder(view){
-        fun bind(city : City) {
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        fun bind(city: City) {
             itemView.txtViewNameCity.text = "${city.name}, ${city.sys.country}"
             itemView.txtViewTemp.text = city.main.temp.toInt().toString()
-            itemView.txtViewWind.text = "Wind ${city.wind.speed} m/s | clouds ${city.clouds.all} | " +
-                    "${city.main.pressure} hpa"
-            if (city.weather.isNotEmpty()){
+            itemView.txtViewWind.text =
+                "Wind ${city.wind.speed} m/s | clouds ${city.clouds.all} | " +
+                        "${city.main.pressure} hpa"
+            if (city.weather.isNotEmpty()) {
                 Glide.with(itemView.context)
                     .load("http://openweathermap.org/img/w/${city.weather[0].icon}.png")
                     //.placeholder(R.drawable.ic_launcher_background)
                     .into(itemView.imgViewWeatherIcon)
                 itemView.txtViewDescription.text = city.weather[0].description
             }
+            if (city.isFavorite) {
+                itemView.btnFavorite.setImageResource(android.R.drawable.star_big_on)
+            } else {
+                itemView.btnFavorite.setImageResource(android.R.drawable.star_big_off)
+            }
+            itemView.btnFavorite.setOnClickListener {
+                city.isFavorite = !city.isFavorite
+                if (city.isFavorite) {
+                    itemView.btnFavorite.setImageResource(android.R.drawable.star_big_on)
+                } else {
+                    itemView.btnFavorite.setImageResource(android.R.drawable.star_big_off)
+                }
+                (itemView.context as ListActivity).favorite(city)
+            }
+        }
+    }
+
+    fun updateFavorites(favorites: List<Int>) {
+        if (this.list != null) {
+            this.list?.forEach {
+                if (favorites.contains(it.id)) {
+                    it.isFavorite = true
+                }
+            }
+            notifyDataSetChanged()
         }
     }
 
